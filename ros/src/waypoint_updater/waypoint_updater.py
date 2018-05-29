@@ -22,7 +22,7 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 50 #200 Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 200 #Number of waypoints we will publish. You can change this number
 
 
 class WaypointUpdater(object):
@@ -67,12 +67,14 @@ class WaypointUpdater(object):
         val = np.dot(cl_vect-prev_vect, pos_vect-cl_vect)
         if val>0:
             closest_idx = (closest_idx+1)%len(self.waypoints_2d)
+        #rospy.logwarn("closest index:%s",closest_idx)
         return closest_idx
         
     def publish_waypoints(self, closest_idx):
         lane = Lane()
+        #rospy.logwarn("type :%s",self.base_waypoints.waypoints[closest_idx : closest_idx + LOOKAHEAD_WPS])
         lane.header = self.base_waypoints.header
-        lane.waypoints = self.base_waypoints[closest_idx:closest_idx+LOOKAHEAD_WPS]
+        lane.waypoints = self.base_waypoints.waypoints[closest_idx : closest_idx + LOOKAHEAD_WPS]
         self.final_waypoints_pub.publish(lane)
     
     def pose_cb(self, msg):
@@ -81,6 +83,7 @@ class WaypointUpdater(object):
     def waypoints_cb(self, waypoints):
         self.base_waypoints = waypoints
         if not self.waypoints_2d:
+            #rospy.logwarn("waypoints :%s",waypoints)
             self.waypoints_2d = [[waypoint.pose.pose.position.x,waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]
             self.waypoint_tree = KDTree(self.waypoints_2d)
 
