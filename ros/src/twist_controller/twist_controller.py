@@ -29,7 +29,12 @@ class Controller(object):
         self.decel_limit=decel_limit
         self.accel_limit=accel_limit
         self.wheel_radius=wheel_radius
-
+        rospy.logwarn("vehicle_mass: %s",vehicle_mass)
+        rospy.logwarn("fuel_capacity: %s",fuel_capacity)
+        rospy.logwarn("brake_deadband: %s",brake_deadband)
+        rospy.logwarn("decel_limit: %s",decel_limit)
+        rospy.logwarn("accel_limit: %s",accel_limit)
+        rospy.logwarn("wheel_radius: %s",wheel_radius)
         self.last_time=rospy.get_time()
         
 
@@ -40,6 +45,7 @@ class Controller(object):
             self.throttle_controller.reset()
             return 0., 0., 0.
         current_vel = self.vel_lpf.filt(current_vel)
+        #rospy.logwarn("linear_vel: %s, angular_vel: %s, current_vel: %s, ", linear_vel, angular_vel, current_vel)
         steering= self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
         vel_error=linear_vel-current_vel
         self.last_vel=current_vel
@@ -58,4 +64,5 @@ class Controller(object):
             throttle=0
             decel=max(vel_error, self.decel_limit)
             brake=abs(decel)*self.vehicle_mass*self.wheel_radius
+        #rospy.logwarn("steering: %s",steering)
         return throttle, brake , steering
